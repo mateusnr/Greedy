@@ -7,7 +7,3 @@
 |Matrícula | Aluno |
 | -- | -- |
 | 16/0014981  |  Mateus Nóbrega |
-
-## Sobre 
-Descreva os objetivos do seu projeto e como ele funciona. 
-
