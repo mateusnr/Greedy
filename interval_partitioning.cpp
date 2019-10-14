@@ -4,36 +4,59 @@
 #include <map>
 #include <algorithm>
 
-using job=std::pair<int, int>;
-
-int interval_partitioning(std::vector<job> &job_list, std::map<int, std::vector<job>>& classrooms)
+struct Task
 {
-	// min heap to maintain finish times
+	int start, end;
+
+	Task(){}
+	Task(int s, int e)
+	{
+		start = s;
+		end = e;
+	}
+
+	bool operator<(const Task& t)
+	{
+		return start < t.start;
+	}
+
+};
+
+int interval_partitioning(std::vector<Task> &task_list, std::map<int, std::vector<Task>>& classrooms)
+{
+	// we need to sort the task list by start time
+	std::sort(task_list.begin(), task_list.end());
+
+	/*
+	 * By default pairs are ordered by their first element and second
+	 * The min heap will contain {finish time, classroom}
+	 */
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> p_queue;
 
 	int rooms = 1;
-	// we need to sort the job list by start time
-	std::sort(job_list.begin(), job_list.end());
+	
+	p_queue.push({task_list[0].end, rooms});
+	classrooms[rooms].push_back(task_list[0]);
 
-	p_queue.push({job_list[0].second, rooms});
-	classrooms[rooms].push_back(job_list[0]);
-
-	for (auto job = std::next(job_list.begin()); job != job_list.end(); job++)
+	for (auto task = std::next(task_list.begin()); task != task_list.end(); task++)
 	{
-		int earliest_finish_time = p_queue.top().first;
+		int earliest_end_time = p_queue.top().first;
 		int curr_room = p_queue.top().second;
 	
-		if (job->first >= earliest_finish_time)
+		if (task->start >= earliest_end_time)
 		{
-			classrooms[curr_room].push_back(*job);	
+			classrooms[curr_room].push_back(*task);	
+
+			// update heap with the new finish time
 			p_queue.pop();
-			p_queue.push({job->second, curr_room});
+			p_queue.push({task->end, curr_room});
 		}
 		else
 		{
+			// allocate a new room for the task
 			rooms++;
-			classrooms[rooms].push_back(*job);
-			p_queue.push({job->second, rooms});
+			classrooms[rooms].push_back(*task);
+			p_queue.push({task->end, rooms});
 		}
 	}
 
@@ -43,24 +66,24 @@ int interval_partitioning(std::vector<job> &job_list, std::map<int, std::vector<
 
 int main()
 {
-	std::vector<job> job_list;
-	std::map<int, std::vector<job>> classrooms;
-	int no_jobs;
+	std::vector<Task> task_list;
+	std::map<int, std::vector<Task>> classrooms;
+	int no_tasks;
 
 	std::cout << "Digite a quantidade de tarefas: ";
-	std::cin >> no_jobs;
+	std::cin >> no_tasks;
 
 	std::cout << "Insira a entrada e saida das tarefas, separada por espaco:\n";
-	for (int i = 0; i < no_jobs; i++)
+	for (int i = 0; i < no_tasks; i++)
 	{
-		std::pair<int, int> job;
+		Task task;
 
-		std::cin >> job.first >> job.second;
+		std::cin >> task.start >> task.end;
 
-		job_list.push_back(job);
+		task_list.push_back(task);
 	}
 
-	int answer = interval_partitioning(job_list, classrooms);
+	int answer = interval_partitioning(task_list, classrooms);
 	std::cout << "Numero de salas necessarias: " << answer << "\n";
 
 	std::cout << "\n";
@@ -68,12 +91,11 @@ int main()
 	for (int i = 1; i <= classrooms.size(); i++)
 	{
 		std::cout << "Sala " << i << ":\n";
-		for (auto job : classrooms[i])
+		for (auto task : classrooms[i])
 		{
-			std::cout << job.first << "->" << job.second << "\n";
+			std::cout << task.start << "->" << task.end << "\n";
 		}
 
 	}
-
 	
 }
