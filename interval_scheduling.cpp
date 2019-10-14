@@ -4,28 +4,44 @@
 #include <vector>
 #include <iterator>
 
-std::vector<std::pair<int, int>> interval_scheduling(const std::vector<std::pair<int, int>>& job_list)
+struct Task
 {
-	std::vector<std::pair<int, int>> schedule;
+	int start, end;
 
-	int size = job_list.size();
+	Task(){}
+	Task(int s, int e)
+	{
+		start = s;
+		end = e;
+	}
 
-	std::pair<int, int> last_job = *job_list.begin();
+	bool operator<(const Task& t)
+	{
+		return end < t.end;
+	}
 
-	// as the job list is already sorted, the first one always enters the list
-	schedule.push_back(last_job);
+};
 
-	for (auto it = std::next(job_list.begin()); it != job_list.end(); it++)
+std::vector<Task> interval_scheduling(const std::vector<Task>& task_list)
+{
+	std::vector<Task> schedule;
+
+	Task last_task = *task_list.begin();
+
+	// as the task list is already sorted, the first one always enters the list
+	schedule.push_back(last_task);
+
+	for (auto task = std::next(task_list.begin()); task != task_list.end(); task++)
 	{
 		/*
-		 * If the job's start is greater or equal than the last one in the list,
+		 * If the task's start is greater or equal than the last one in the list,
 		 * add to the answer
 		 */
 
-		if (it->first >= last_job.second)
+		if (task->start >= last_task.end)
 		{
-			schedule.push_back(*it);
-			last_job = *it;
+			schedule.push_back(*task);
+			last_task = *task;
 		}
 	}
 
@@ -34,32 +50,30 @@ std::vector<std::pair<int, int>> interval_scheduling(const std::vector<std::pair
 
 int main()
 {
-	std::vector<std::pair<int, int>> job_list;
-	int no_of_jobs;
+	std::vector<Task> task_list;
+	int no_of_tasks;
 	std::cout << "Digite a quantidade de tarefas: ";
-	std::cin >> no_of_jobs;
+	std::cin >> no_of_tasks;
 
 	std::cout << "Insira o comeco e fim de uma tarefa, separado por espaco: \n";
-	for (int i = 0; i < no_of_jobs; i++)
+	for (int i = 0; i < no_of_tasks; i++)
 	{
-		std::pair<int, int> aux;
+		Task task;
 
-		std::cin >> aux.first >> aux.second;
+		std::cin >> task.start >> task.end;
 
-		job_list.push_back(aux);
+		task_list.push_back(task);
 	}
 
-	// sorting by finish time (second element in the pair)
-	std::sort(job_list.begin(), job_list.end(), [](auto& left, auto& right){
-		return left.second < right.second; 
-	});
+	// sorting by finish time 
+	std::sort(task_list.begin(), task_list.end());
 
-	std::vector<std::pair<int, int>> schedule = interval_scheduling(job_list);
+	std::vector<Task> schedule = interval_scheduling(task_list);
 
 	std::cout << "O melhor agendamento de tarefas, com o comeco e fim, eh: \n";
-	for (auto job : schedule)
+	for (auto task : schedule)
 	{
-		std::cout << job.first << " " << job.second << "\n";
+		std::cout << task.start << " " << task.end << "\n";
 	}
 
 }
